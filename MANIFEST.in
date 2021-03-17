@@ -1,0 +1,4 @@
+include README.md
+recursive-include octoprint_CustomDisplay/templates *
+recursive-include octoprint_CustomDisplay/translations *
+recursive-include octoprint_CustomDisplay/static *
