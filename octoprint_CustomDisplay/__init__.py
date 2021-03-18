@@ -10,17 +10,43 @@ from __future__ import absolute_import
 # Take a look at the documentation on what other plugin mixins are available.
 
 import octoprint.plugin
+from octoprint.events import Events
+import flask
+
+
+import requests
+from time import sleep
+import time
+import json
+#from types import SimpleNamespace
+import smbus
+import errno
+
+from luma.core.interface.serial import i2c, spi, pcf8574
+from luma.core.interface.parallel import bitbang_6800
+from luma.core.render import canvas
+from luma.oled.device import ssd1306, ssd1309, ssd1325, ssd1331, sh1106, ws0010
+from RPLCD.i2c import CharLCD
+import Python_DHT
+from w1thermsensor import W1ThermSensor, Sensor
+
+import RPi.GPIO as GPIO
+
+GPIO.setmode(GPIO.BCM)
 
 class CustomdisplayPlugin(octoprint.plugin.SettingsPlugin,
                           octoprint.plugin.AssetPlugin,
-                          octoprint.plugin.TemplatePlugin):
+                          octoprint.plugin.TemplatePlugin,
+                          octoprint.plugin.SettingsPlugin):
+
+    def on_after_startup(self):
+        self._logger.info("-----------------------------")
+        self._logger.info("plugin: Customdisplay start")
 
 	##~~ SettingsPlugin mixin
 
 	def get_settings_defaults(self):
-		return dict(
-			# put your plugin's default settings here
-		)
+		return dict(url="https://en.wikipedia.org/wiki/Hello_world")
 
 	##~~ AssetPlugin mixin
 
@@ -32,6 +58,59 @@ class CustomdisplayPlugin(octoprint.plugin.SettingsPlugin,
 			css=["css/CustomDisplay.css"],
 			less=["less/CustomDisplay.less"]
 		)
+
+    ##~~ TemplatePlugin mixin
+
+    def get_template_configs(self):
+        return [
+            dict(type="navbar", custom_bindings=False),
+            dict(type="settings", custom_bindings=False)
+        ]
+
+
+    ##~~ IFTTT Section
+    def send_notification(self, message):
+        provider = 'ifttt'
+        api_key = 'g76cMC4NcQBikT4P_wMdJ'
+        event = 'printer_event'
+        try:
+            self._logger.info("send_notification to IFTTT while M600 gcode sent", provider)
+            if provider == 'ifttt':
+                self._logger.debug("Sending notification to: %s with msg: %s with key: %s", provider, message, api_key)
+                try:
+                    res = self.build_ifttt_request(message, event, api_key)
+                except requests.exceptions.ConnectionError:
+                    self._logger.info("Error: Could not connect to IFTTT")
+                except requests.exceptions.HTTPError:
+                    self._logger.info("Error: Received invalid response")
+                except requests.exceptions.Timeout:
+                    self._logger.info("Error: Request timed out")
+                except requests.exceptions.TooManyRedirects:
+                    self._logger.info("Error: Too many redirects")
+                except requests.exceptions.RequestException as reqe:
+                    self._logger.info("Error: {e}".format(e=reqe))
+                if res.status_code != requests.codes['ok']:
+                    try:
+                        j = res.json()
+                    except ValueError:
+                        self._logger.info('Error: Could not parse server response. Event not sent')
+                    for err in j['errors']:
+                        self._logger.info('Error: {}'.format(err['message']))
+        except Exception as ex:
+            self.log_error(ex)
+            pass
+
+    def build_ifttt_request(self, message, event, api_key):
+        url = "https://maker.ifttt.com/trigger/{e}/with/key/{k}/".format(e=event, k=api_key)
+        payload = {'value1': message,}
+        return requests.post(url, data=payload)
+
+
+
+
+
+
+
 
 	##~~ Softwareupdate hook
 
@@ -76,4 +155,3 @@ def __plugin_load__():
 	__plugin_hooks__ = {
 		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
 	}
-
