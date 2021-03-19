@@ -9,8 +9,8 @@ $(function() {
         var self = this;
 
         // assign the injected parameters, e.g.:
-        // self.loginStateViewModel = parameters[0];
-        // self.settingsViewModel = parameters[1];
+        self.loginStateViewModel = parameters[0];
+        self.settingsViewModel = parameters[1];
 
         // TODO: Implement your plugin's view model here.
     }
@@ -22,8 +22,8 @@ $(function() {
     OCTOPRINT_VIEWMODELS.push({
         construct: CustomdisplayViewModel,
         // ViewModels your plugin depends on, e.g. loginStateViewModel, settingsViewModel, ...
-        dependencies: [ /* "loginStateViewModel", "settingsViewModel" */ ],
+        dependencies: ["loginStateViewModel", "settingsViewModel"],
         // Elements to bind to, e.g. #settings_plugin_CustomDisplay, #tab_plugin_CustomDisplay, ...
-        elements: [ /* ... */ ]
+        elements: ["#tab_plugin_CustomDisplay"]
     });
 });

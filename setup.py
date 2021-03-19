@@ -33,7 +33,19 @@ plugin_url = "https://github.com/Hufnagels/OctoPrint-Customdisplay"
 plugin_license = "AGPLv3"
 
 # Any additional requirements besides OctoPrint should be listed here
-plugin_requires = []
+plugin_requires = [
+	"RPi.GPIO>=0.7",
+	"RPLCD",
+	"smbus",
+	"requests>=2.7",
+	#"Adafruit_Blinka",
+    #"adafruit-circuitpython-dht>=3.5",
+    "dht11",
+	"luma.core>=2.3",
+	"luma.oled>=3.8",
+	"luma.lcd>=2.8",
+	"w1thermsensor"
+]
 
 ### --------------------------------------------------------------------------------------------------------------------
 ### More advanced options that you usually shouldn't have to touch follow after this point
