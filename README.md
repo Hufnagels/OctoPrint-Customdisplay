@@ -15,4 +15,6 @@ the plugin manager.
 ## Configuration
 
 **TODO:** Describe your plugin's configuration options (if any).
+install 3rd party [Python_DHT library](https://github.com/coding-world/Python_DHT)
 sudo apt install libgpiod2
+Install and configure [pigpiod](https://github.com/guymcswain/pigpio-client/wiki/Install-and-configure-pigpiod)

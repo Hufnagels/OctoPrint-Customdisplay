@@ -1,8 +1,22 @@
+<h3>{{ _("CustomDisplay Settings") }}</h3>
 <form class="form-horizontal">
     <div class="control-group">
-        <label class="control-label">{{ _('URL') }}</label>
+        <label class="control-label">{{ _('IFTTT Event name') }}</label>
         <div class="controls">
-            <input type="text" class="input-block-level" data-bind="value: settings.plugins.customdisplay.url">
+            <input type="text" class="input-block-level" data-bind="value: settings.plugins.customdisplay.ifttt_event">
         </div>
     </div>
+    <div class="control-group">
+        <label class="control-label">{{ _('IFTT API key') }}</label>
+        <div class="controls">
+            <input type="text" class="input-block-level" data-bind="value: settings.plugins.customdisplay.ifttt_api_key">
+        </div>
+    </div>
+    {% for key in templates.plugin_custom_template_provider_awesometemplate.order %}
+    {% set heading, config = templates.plugin_custom_template_provider_awesometemplate.entries[key] %}
+    <div id="{{ config._div }}">
+        <h4>{{ heading }}</h4>
+        {% include config.template ignore missing %}
+    </div>
+{% endfor %}
 </form>
