@@ -38,10 +38,7 @@ plugin_requires = [
 	"RPLCD",
 	"smbus",
 	"requests>=2.7",
-	#"Adafruit_Blinka",
-    #"adafruit-circuitpython-dht>=3.5",
-    #"dht11",
-    "Python_DHT",
+    #"Python_DHT", --> must be installed manually
 	"luma.core>=2.3",
 	"luma.oled>=3.8",
 	"luma.lcd>=2.8",
