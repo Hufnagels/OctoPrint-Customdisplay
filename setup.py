@@ -38,7 +38,7 @@ plugin_requires = [
 	"RPLCD",
 	"smbus",
 	"requests>=2.7",
-    #"Python_DHT",
+	#"Python_DHT",
 	"luma.core>=2.3",
 	"luma.oled>=3.8",
 	"luma.lcd>=2.8",
