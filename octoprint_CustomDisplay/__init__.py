@@ -365,35 +365,49 @@ class CustomdisplayPlugin(octoprint.plugin.StartupPlugin,
     def getSensorData(self):
         # read DHT11 data using pin
         resp = {}
-        for tempsensors in self.tempsensors['DHT11']:
-            dht11sensor = Python_DHT.DHT11
-            dht11pin = int(tempsensors['pin'])
-            self._logger.info("--dht_device--------")
-            self._logger.info(dht11sensor)
 
-            try:
-                humidity, temperature_c = Python_DHT.read_retry(dht11sensor, dht11pin)
-                print(tempsensors['name']+" T:"+str(temperature_c)+ "C H:"+str( humidity)+"%")
-                temperature_f = temperature_c * (9 / 5) + 32
-                self.sensordata.append({'name': tempsensors['name'], 'temp': 'T:' + str(temperature_c), 'hum': ' H:'+str( humidity)+'%'})
-                time.sleep(.5)
-            except Exception as err:
-                #print("Oops! " + tempsensors['name'] + " not found. Check connection! ")
-                self._logger.info("--getSensorData--------")
-                self._logger.info(err)
-                self.sensordata.append({'name': tempsensors['name'], 'temp': 'T: n/a', 'hum': ' H: n/a'})
+		try:
+			import Python_DHT
+			for tempsensors in self.tempsensors['DHT11']:
+				dht11sensor = Python_DHT.DHT11
+				dht11pin = int(tempsensors['pin'])
+				self._logger.info("--dht_device--------")
+				self._logger.info(dht11sensor)
+
+				try:
+					humidity, temperature_c = Python_DHT.read_retry(dht11sensor, dht11pin)
+					print(tempsensors['name']+" T:"+str(temperature_c)+ "C H:"+str( humidity)+"%")
+					temperature_f = temperature_c * (9 / 5) + 32
+					self.sensordata.append({'name': tempsensors['name'], 'temp': 'T:' + str(temperature_c), 'hum': ' H:'+str( humidity)+'%'})
+					time.sleep(.5)
+				except Exception as err:
+					#print("Oops! " + tempsensors['name'] + " not found. Check connection! ")
+					self._logger.info("--getSensorData--------")
+					self._logger.info(err)
+					self.sensordata.append({'name': tempsensors['name'], 'temp': 'T: n/a', 'hum': ' H: n/a'})
+		except ModuleNotFoundError:
+			print("module 'Python_DHT' is notinstalled")
+			self.sensordata.append({'name': tempsensors['name'], 'temp': 'T: n/a', 'hum': ' H: n/a'})
         # read DS18B20 data using W1ThermSensor
-        for tempsensors in self.tempsensors['DS18B20']:
-            humidity = 0
-            try:
-                temperature = W1ThermSensor(Sensor.DS18B20, tempsensors['id']).get_temperature()
-                print(tempsensors['name'] + ": %-3.1f C" % temperature )
-                #print("Temperature: %-3.1f C" % data)
-                self.sensordata.append({'name': tempsensors['name'], 'temp': 'T:' + str(round(temperature,1)), 'hum': ' H:'+str( humidity)+'%'})
-            except Exception:
-                #print("Oops! " + tempsensors['name'] + "(" +tempsensors['id'] + ") not found. Check connection! ")
-                self.sensordata.append({'name': tempsensors['name'], 'temp': 'T: n/a', 'hum': ' H:'+str( humidity)+'%'})
+		try:
+			import w1thermsensor
+			for tempsensors in self.tempsensors['DS18B20']:
+				humidity = 0
+				try:
+					temperature = W1ThermSensor(Sensor.DS18B20, tempsensors['id']).get_temperature()
+					print(tempsensors['name'] + ": %-3.1f C" % temperature)
+					# print("Temperature: %-3.1f C" % data)
+					self.sensordata.append({'name': tempsensors['name'], 'temp': 'T:' + str(round(temperature, 1)),
+											'hum': ' H:' + str(humidity) + '%'})
+				except Exception:
+					# print("Oops! " + tempsensors['name'] + "(" +tempsensors['id'] + ") not found. Check connection! ")
+					self.sensordata.append(
+						{'name': tempsensors['name'], 'temp': 'T: n/a', 'hum': ' H:' + str(humidity) + '%'})
+		except ModuleNotFoundError:
+			print("module 'w1thermsensor' is not installed")
+			self.sensordata.append({'name': tempsensors['name'], 'temp': 'T: n/a', 'hum': ' H: n/a'})
         return self.sensordata
+
     ##~~ OLED/LCD Section
     ##~~ Print message Section
     ##~~ Printer communication Section
@@ -408,6 +422,11 @@ class CustomdisplayPlugin(octoprint.plugin.StartupPlugin,
             #self._logger.info("Sending notification to: %s with msg: %s with key: %s", provider, message, api_key)
             try:
                 res = self.build_IFTTT_request(self._settings.get(["ifttt_event"], self._settings.get(["ifttt_api_key"], fileName, event)
+            except Exception as ex:
+				self._logger.info("plugin: Customdisplay")
+				self._logger.info("try to communicate with IFTTT server. error occurred:")
+				self._logger.info(ex)
+			"""
             except requests.exceptions.ConnectionError:
                 self._logger.info("plugin: Customdisplay")
                 self._logger.info("Error: Could not connect to IFTTT")
@@ -423,14 +442,15 @@ class CustomdisplayPlugin(octoprint.plugin.StartupPlugin,
             except requests.exceptions.RequestException as reqe:
                 self._logger.info("plugin: Customdisplay")
                 self._logger.info("Error: {e}".format(e=reqe))
+            """
             if res.status_code != requests.codes['ok']:
                 try:
                     j = res.json()
                 except ValueError:
                     self._logger.info("plugin: Customdisplay")
                     self._logger.info('Error: Could not parse server response. Event not sent')
-                for err in j['errors']:
-                    self._logger.info('Error: {}'.format(err['message']))
+				#for err in j['errors']:
+                #    self._logger.info('Error: {}'.format(err['message']))
 
         except Exception as ex:
             self._logger.info("plugin: Customdisplay")
