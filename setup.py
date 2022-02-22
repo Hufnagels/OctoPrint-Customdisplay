@@ -39,6 +39,7 @@ plugin_requires = [
 	"smbus",
 	"requests>=2.7",
 	#"Python_DHT",
+	"paho-mqtt>=1.5",
 	"luma.core>=2.3",
 	"luma.oled>=3.8",
 	"luma.lcd>=2.8",
